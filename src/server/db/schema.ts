@@ -1,7 +1,7 @@
 // Example model schema from the Drizzle docs
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
-import { Many, Relation, relations, sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
   bigint,
   index,
@@ -30,7 +30,7 @@ export const skill = mysqlTable(
   }),
 );
 
-export const skillRelations = relations(skill, ({ many, one }) => ({
+export const skillRelations = relations(skill, ({ many }) => ({
   tasks: many(tasks),
   teamMembers: many(teamMembers),
 }));
@@ -65,7 +65,7 @@ export const tasks = mysqlTable("task", {
   isAssigned: boolean("is_assigned").default(false).notNull(),
 });
 
-export const taskRelation = relations(tasks, ({ many, one }) => ({
+export const taskRelation = relations(tasks, ({ one }) => ({
   author: one(teamMembers, {
     fields: [tasks.asignedToId],
     references: [teamMembers.id],

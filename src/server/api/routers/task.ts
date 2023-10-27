@@ -19,7 +19,7 @@ export const taskRouter = createTRPCRouter({
       });
     }),
 
-  getAll: publicProcedure.query(async ({ ctx, input }) => {
+  getAll: publicProcedure.query(async ({ ctx }) => {
     return await ctx.db.query.tasks.findMany();
   }),
 
@@ -29,7 +29,7 @@ export const taskRouter = createTRPCRouter({
   //     await ctx.db.delete(tasks).where({ id: input.id });
   //   }),
 
-  assign: publicProcedure
-    .input(z.object({ id: z.number().min(1) }))
-    .mutation(async ({ ctx, input }) => {}),
+  // assign: publicProcedure
+  //   .input(z.object({ id: z.number().min(1) }))
+  //   .mutation(async ({ ctx, input }) => {}),
 });
