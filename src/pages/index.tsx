@@ -168,11 +168,6 @@ const AddTaskForm = () => {
 
   const form = useForm<z.infer<typeof taskFormSchema>>({
     resolver: zodResolver(taskFormSchema),
-    defaultValues: {
-      taskName: "",
-      taskDescription: "",
-      taskSkill: "",
-    },
   });
 
   const onSubmit = async (values: z.infer<typeof taskFormSchema>) => {
@@ -290,10 +285,6 @@ const AddTeamForm = () => {
 
   const form = useForm<z.infer<typeof teamFormSchema>>({
     resolver: zodResolver(teamFormSchema),
-    defaultValues: {
-      name: "",
-      skill: "",
-    },
   });
 
   const onSubmit = async (values: z.infer<typeof teamFormSchema>) => {
@@ -344,9 +335,6 @@ const AddTeamForm = () => {
                     )}
                   </SelectContent>
                 </Select>
-                <FormDescription>
-                  Skill required to complete the task
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
