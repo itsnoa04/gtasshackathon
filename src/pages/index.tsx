@@ -19,6 +19,24 @@ import {
 } from "~/components/ui/alert-dialog";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 export default function Home() {
   return (
@@ -63,18 +81,11 @@ const taskFormSchema = z.object({
 const AddTask = () => {
   return (
     <AlertDialog>
-      <AlertDialogTrigger>
-        <Button className="bg-slate-600">Add New Task</Button>
-      </AlertDialogTrigger>
+      <Button className="bg-slate-600">
+        <AlertDialogTrigger>Add New Task</AlertDialogTrigger>
+      </Button>
       <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Add Task</AlertDialogTitle>
-          <AlertDialogDescription></AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction>AddTask</AlertDialogAction>
-        </AlertDialogFooter>
+        <AddTaskForm />
       </AlertDialogContent>
     </AlertDialog>
   );
@@ -89,6 +100,84 @@ const AddTaskForm = () => {
       taskSkill: "",
     },
   });
+
+  const onSubmit = async (values: z.infer<typeof taskFormSchema>) => {
+    console.log(values);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="taskName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Task Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Find Nemo" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="taskDescription"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Task Description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Find Nemo, a young clownfish who has been captured by a scuba diver and taken to a dentist's office aquarium."
+                    className="resize-none"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="taskSkill"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Skill Required</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a skill" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="1">Skill 1</SelectItem>
+                    <SelectItem value="2">Skill 2</SelectItem>
+                    <SelectItem value="3">Skill 3</SelectItem>
+                    <SelectItem value="4">Skill 4</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Skill required to complete the task
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="flex gap-3">
+          <AlertDialogAction type="submit" className="bg-slate-600">
+            Submit
+          </AlertDialogAction>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+        </div>
+      </form>
+    </Form>
+  );
 };
 
 const TeamTaskCard = () => {
