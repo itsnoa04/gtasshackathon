@@ -1,7 +1,7 @@
 // import { z } from "zod";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
-import { teamMembers } from "~/server/db/schema";
+import { tasks, teamMembers } from "~/server/db/schema";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 
@@ -49,6 +49,20 @@ export const teamRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const user = await ctx.db.query.teamMembers.findFirst({
+        with: {
+          tasks: true,
+        },
+        where: (user, { eq }) => {
+          return eq(user.id, input.id);
+        },
+      });
+
+      user &&
+        user.tasks.length > 0 &&
+        user.tasks.forEach(async (task) => {
+          await ctx.db.delete(tasks).where(eq(tasks.id, task.id));
+        });
       await ctx.db
         .delete(teamMembers)
         .where(eq(teamMembers.id, input.id))

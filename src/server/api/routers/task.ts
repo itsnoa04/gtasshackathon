@@ -67,6 +67,23 @@ export const taskRouter = createTRPCRouter({
 
       return result;
     }),
+
+  deleteTask: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      ctx.db
+        .delete(tasks)
+        .where(eq(tasks.id, input.id))
+        .catch((err) => {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+          });
+        });
+    }),
 });
 
 // export const taskRouter = createTRPCRouter({

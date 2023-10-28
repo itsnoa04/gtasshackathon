@@ -3,6 +3,8 @@ import Image from "next/image";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import autoAnimate from "@formkit/auto-animate";
+
 // import { api } from "~/utils/api";
 import logo from "~/assets/logo.png";
 import { Button } from "~/components/ui/button";
@@ -38,7 +40,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { api } from "~/utils/api";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "~/components/ui/use-toast";
 import { Badge } from "~/components/ui/badge";
 import {
@@ -68,11 +70,29 @@ export default function Home() {
 
 const TaskTeamTable = () => {
   const { data: teams, isLoading: isTeamsLoading } = api.team.getAll.useQuery();
+  const list = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (list.current) {
+      autoAnimate(list.current);
+    }
+  }, [list]);
   return (
     <div className=" flex w-[70vw] flex-col gap-5 ">
       <div className="rounded-2xl bg-slate-500">
         {isTeamsLoading ? (
-          <div>Loading...</div>
+          <div
+            style={{ height: "50vh" }}
+            className="flex items-center justify-center text-2xl text-white"
+          >
+            Loading...
+          </div>
+        ) : teams?.length === 0 ? (
+          <div
+            style={{ height: "50vh" }}
+            className="flex items-center justify-center text-2xl text-white"
+          >
+            No Users Found
+          </div>
         ) : (
           teams?.map((team) => (
             <TeamTaskCard
@@ -470,15 +490,69 @@ const UserCard = ({
   );
 };
 
-const TaskCard = ({ name, description }: Task) => {
+const TaskCard = ({ name, description, id }: Task) => {
+  const { toast } = useToast();
+  const ctx = api.useUtils();
+  const { mutate: deleteTask } = api.task.deleteTask.useMutation({
+    onSuccess: () => {
+      toast({
+        title: "Task Deleted",
+        description: "Task has been deleted successfully!",
+      });
+      void ctx.task.getByAssignedTo.invalidate();
+    },
+
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Error deleting task",
+      });
+    },
+  });
+
   return (
-    <div className="mx-2.5 my-5 flex w-[10vw] min-w-[10vw] flex-col items-start gap-5 rounded-xl bg-white p-5">
-      <h2 className="text-xl font-bold">{name}</h2>
-      <p className="text-md font-normal">
-        {description.length > 100
-          ? description.slice(0, 100) + "..."
-          : description}
-      </p>
-    </div>
+    <Popover>
+      <PopoverTrigger>
+        <div className="mx-2.5 my-5 flex w-[10vw] min-w-[10vw] flex-col items-start gap-5 rounded-xl bg-white p-5">
+          <h2 className="text-xl font-bold">{name}</h2>
+          <p className="text-md font-normal">
+            {description.length > 100
+              ? description.slice(0, 100) + "..."
+              : description}
+          </p>
+        </div>
+      </PopoverTrigger>
+      <PopoverContent className="flex">
+        <AlertDialog>
+          <AlertDialogTrigger className="w-full">
+            <Button className="w-full bg-red-600 hover:bg-red-800">
+              Remove Task
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete this
+                Task.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Go Back</AlertDialogCancel>
+              <AlertDialogAction
+                className=" bg-red-600 hover:bg-red-800"
+                onClick={() => {
+                  deleteTask({
+                    id: id,
+                  });
+                }}
+              >
+                I Understand
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </PopoverContent>
+    </Popover>
   );
 };
