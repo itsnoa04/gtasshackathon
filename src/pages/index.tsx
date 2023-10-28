@@ -1,9 +1,9 @@
 import Head from "next/head";
 import Image from "next/image";
-import Link from "next/link";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { api } from "~/utils/api";
+// import { api } from "~/utils/api";
 import logo from "~/assets/logo.png";
 import { Button } from "~/components/ui/button";
 import {
@@ -11,10 +11,6 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import * as z from "zod";
