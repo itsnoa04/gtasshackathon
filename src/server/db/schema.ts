@@ -27,6 +27,7 @@ export const teamMembers = mysqlTable(
     skill: varchar("currently_working_on", {
       length: 256,
     }).notNull(),
+    taskCount: bigint("task_count", { mode: "number" }).default(0).notNull(),
   },
   (example) => ({
     nameIndex: index("name_idx").on(example.name),
@@ -42,8 +43,7 @@ export const tasks = mysqlTable("task", {
   name: varchar("name", { length: 256 }).notNull(),
   description: text("description").default("").notNull(),
   skill_required: varchar("skill_required", { length: 256 }).notNull(),
-  asignedToId: bigint("asigned_to_id", { mode: "number" }),
-  isAssigned: boolean("is_assigned").default(false).notNull(),
+  asignedToId: bigint("asigned_to_id", { mode: "number" }).notNull(),
 });
 
 export const taskRelation = relations(tasks, ({ one }) => ({

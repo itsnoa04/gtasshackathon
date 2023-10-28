@@ -143,8 +143,28 @@ const AddTask = () => {
 };
 
 const AddTaskForm = () => {
+  const { toast } = useToast();
   const { data: skills, isLoading: isSkillsLoading } =
     api.skills.getAll.useQuery();
+
+  const ctx = api.useUtils();
+
+  const { mutate: assignTask } = api.task.create.useMutation({
+    onSuccess: () => {
+      toast({
+        title: "Task Assigned",
+        description: "Task has been assigned",
+      });
+      void ctx.task.getByAssignedTo.invalidate();
+    },
+
+    onError: ({ message }) => {
+      toast({
+        title: "Error",
+        description: message || "Error assigning task",
+      });
+    },
+  });
 
   const form = useForm<z.infer<typeof taskFormSchema>>({
     resolver: zodResolver(taskFormSchema),
@@ -156,7 +176,11 @@ const AddTaskForm = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof taskFormSchema>) => {
-    console.log(values);
+    assignTask({
+      taskName: values.taskName,
+      taskDescription: values.taskDescription,
+      skillRequired: values.taskSkill,
+    });
   };
 
   return (
@@ -357,14 +381,25 @@ const TeamTaskCard = ({
   skill: string;
   tasks: Task[];
 }) => {
+  const { data: tasksData, isLoading: isTasksLoading } =
+    api.task.getByAssignedTo.useQuery(userId);
   return (
     <div className="flex">
       <UserCard userName={userName} skill={skill} userId={userId} />
       <div className="m-0 flex w-full">
-        <TaskCard />
-        <TaskCard />
-        <TaskCard />
-        <TaskCard />
+        {isTasksLoading ? (
+          <div>Loading...</div>
+        ) : (
+          tasksData?.map((task) => (
+            <TaskCard
+              key={task.id}
+              name={task.name}
+              description={task.description}
+              id={task.id}
+              skill={task.skill_required}
+            />
+          ))
+        )}
       </div>
     </div>
   );
@@ -447,12 +482,14 @@ const UserCard = ({
   );
 };
 
-const TaskCard = () => {
+const TaskCard = ({ name, description }: Task) => {
   return (
     <div className="mx-2.5 my-5 flex w-[10vw] min-w-[10vw] flex-col items-start gap-5 rounded-xl bg-white p-5">
-      <h2 className="text-xl font-bold">Task Name</h2>
+      <h2 className="text-xl font-bold">{name}</h2>
       <p className="text-md font-normal">
-        lorem ipsum lorem ipsum lorem ipsumlorem ipsum
+        {description.length > 100
+          ? description.slice(0, 100) + "..."
+          : description}
       </p>
     </div>
   );
