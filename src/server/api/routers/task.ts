@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { tasks, teamMembers } from "~/server/db/schema";
 import { TRPCError } from "@trpc/server";
+import { eq } from "drizzle-orm";
 
 export const taskRouter = createTRPCRouter({
   create: publicProcedure
@@ -20,7 +21,7 @@ export const taskRouter = createTRPCRouter({
         where: (user, { eq }) => {
           return eq(user.skill, input.skillRequired);
         },
-        orderBy: (user, { desc }) => [desc(user.taskCount)],
+        orderBy: (user, { asc }) => [asc(user.taskCount)],
       });
 
       if (!user) {
@@ -44,9 +45,12 @@ export const taskRouter = createTRPCRouter({
           });
         });
 
-      await ctx.db.update(teamMembers).set({
-        taskCount: user.taskCount + 1,
-      });
+      await ctx.db
+        .update(teamMembers)
+        .set({
+          taskCount: user.taskCount + 1,
+        })
+        .where(eq(teamMembers.id, user.id));
     }),
 
   getByAssignedTo: publicProcedure
