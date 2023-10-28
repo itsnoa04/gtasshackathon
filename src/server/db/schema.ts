@@ -19,28 +19,14 @@ import {
  */
 export const mysqlTable = mysqlTableCreator((name) => `gtasshackathon_${name}`);
 
-export const skill = mysqlTable(
-  "skill",
-  {
-    id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
-    name: varchar("name", { length: 256 }).notNull(),
-  },
-  (example) => ({
-    nameIndex: index("name_idx").on(example.name),
-  }),
-);
-
-export const skillRelations = relations(skill, ({ many }) => ({
-  tasks: many(tasks),
-  teamMembers: many(teamMembers),
-}));
-
 export const teamMembers = mysqlTable(
   "team_member",
   {
     id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
     name: varchar("name", { length: 256 }).notNull(),
-    currentlyWorkingOn: bigint("currently_working_on", { mode: "number" }),
+    currentlyWorkingOn: varchar("currently_working_on", {
+      length: 256,
+    }).notNull(),
   },
   (example) => ({
     nameIndex: index("name_idx").on(example.name),
@@ -49,29 +35,20 @@ export const teamMembers = mysqlTable(
 
 export const teamMemberRelations = relations(teamMembers, ({ many, one }) => ({
   tasks: many(tasks),
-  skills: many(skill),
-  currentlyWorkingOn: one(skill, {
-    fields: [teamMembers.currentlyWorkingOn],
-    references: [skill.id],
-  }),
 }));
 
 export const tasks = mysqlTable("task", {
   id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
   name: varchar("name", { length: 256 }).notNull(),
   description: text("description").default("").notNull(),
-  skill_required_id: bigint("skill_required_id", { mode: "number" }).notNull(),
+  skill_required: varchar("skill_required", { length: 256 }).notNull(),
   asignedToId: bigint("asigned_to_id", { mode: "number" }),
   isAssigned: boolean("is_assigned").default(false).notNull(),
 });
 
 export const taskRelation = relations(tasks, ({ one }) => ({
-  author: one(teamMembers, {
+  assignedTo: one(teamMembers, {
     fields: [tasks.asignedToId],
     references: [teamMembers.id],
-  }),
-  skillRequired: one(skill, {
-    fields: [tasks.skill_required_id],
-    references: [skill.id],
   }),
 }));

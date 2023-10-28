@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { api } from "~/utils/api";
 
 export default function Home() {
   return (
@@ -106,6 +107,9 @@ const AddTask = () => {
 };
 
 const AddTaskForm = () => {
+  const { data: skills, isLoading: isSkillsLoading } =
+    api.skills.getAll.useQuery();
+
   const form = useForm<z.infer<typeof taskFormSchema>>({
     resolver: zodResolver(taskFormSchema),
     defaultValues: {
@@ -169,10 +173,15 @@ const AddTaskForm = () => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="1">Skill 1</SelectItem>
-                    <SelectItem value="2">Skill 2</SelectItem>
-                    <SelectItem value="3">Skill 3</SelectItem>
-                    <SelectItem value="4">Skill 4</SelectItem>
+                    {isSkillsLoading ? (
+                      <SelectItem value="Loading">Loading...</SelectItem>
+                    ) : (
+                      skills?.map((skill) => (
+                        <SelectItem key={skill} value={skill}>
+                          {skill}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
                 <FormDescription>
@@ -185,7 +194,7 @@ const AddTaskForm = () => {
         </div>
         <div className="flex gap-3">
           <AlertDialogAction type="submit" className="bg-slate-600">
-            Submit
+            Assign Task
           </AlertDialogAction>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
         </div>
@@ -195,6 +204,9 @@ const AddTaskForm = () => {
 };
 
 const AddTeamForm = () => {
+  const { data: skills, isLoading: isSkillsLoading } =
+    api.skills.getAll.useQuery();
+
   const form = useForm<z.infer<typeof teamFormSchema>>({
     resolver: zodResolver(teamFormSchema),
     defaultValues: {
@@ -240,10 +252,15 @@ const AddTeamForm = () => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="1">Skill 1</SelectItem>
-                    <SelectItem value="2">Skill 2</SelectItem>
-                    <SelectItem value="3">Skill 3</SelectItem>
-                    <SelectItem value="4">Skill 4</SelectItem>
+                    {isSkillsLoading ? (
+                      <SelectItem value="Loading">Loading...</SelectItem>
+                    ) : (
+                      skills?.map((skill) => (
+                        <SelectItem key={skill} value={skill}>
+                          {skill}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
                 <FormDescription>
@@ -256,7 +273,7 @@ const AddTeamForm = () => {
         </div>
         <div className="flex gap-3">
           <AlertDialogAction type="submit" className="bg-slate-600">
-            Submit
+            Add User
           </AlertDialogAction>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
         </div>
