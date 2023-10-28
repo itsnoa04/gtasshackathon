@@ -11,6 +11,10 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import * as z from "zod";
@@ -34,6 +38,14 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { api } from "~/utils/api";
+import { useEffect, useState } from "react";
+import { useToast } from "~/components/ui/use-toast";
+import { Badge } from "~/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 
 export default function Home() {
   return (
@@ -55,11 +67,30 @@ export default function Home() {
 }
 
 const TaskTeamTable = () => {
+  const { data: teams, isLoading: isTeamsLoading } = api.team.getAll.useQuery();
   return (
     <div className=" flex w-[70vw] flex-col gap-5 ">
       <div className="rounded-2xl bg-slate-500">
-        <TeamTaskCard />
-        <TeamTaskCard />
+        {isTeamsLoading ? (
+          <div>Loading...</div>
+        ) : (
+          teams?.map((team) => (
+            <TeamTaskCard
+              key={team.id}
+              userId={team.id}
+              userName={team.name}
+              skill={team.skill}
+              tasks={team.tasks.map((task) => {
+                return {
+                  id: task.id,
+                  name: task.name,
+                  description: task.description,
+                  skill: task.skill_required,
+                };
+              })}
+            />
+          ))
+        )}
       </div>
       <div className="flex justify-center gap-5 ">
         <AddTask />
@@ -81,6 +112,11 @@ const teamFormSchema = z.object({
 });
 
 const AddTeam = () => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   return (
     <AlertDialog>
       <Button className="bg-slate-600">
@@ -204,8 +240,29 @@ const AddTaskForm = () => {
 };
 
 const AddTeamForm = () => {
+  const { toast } = useToast();
+
   const { data: skills, isLoading: isSkillsLoading } =
     api.skills.getAll.useQuery();
+
+  const ctx = api.useUtils();
+
+  const { mutate: createTeamUser } = api.team.create.useMutation({
+    onSuccess: () => {
+      toast({
+        title: "User Added",
+        description: "User has been added to the team",
+      });
+      void ctx.team.getAll.invalidate();
+    },
+
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Error adding user to the team",
+      });
+    },
+  });
 
   const form = useForm<z.infer<typeof teamFormSchema>>({
     resolver: zodResolver(teamFormSchema),
@@ -216,7 +273,7 @@ const AddTeamForm = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof teamFormSchema>) => {
-    console.log(values);
+    createTeamUser(values);
   };
 
   return (
@@ -282,12 +339,28 @@ const AddTeamForm = () => {
   );
 };
 
-const TeamTaskCard = () => {
+interface Task {
+  id: number;
+  name: string;
+  description: string;
+  skill: string;
+}
+
+const TeamTaskCard = ({
+  userName,
+  skill,
+  userId,
+  tasks,
+}: {
+  userId: number;
+  userName: string;
+  skill: string;
+  tasks: Task[];
+}) => {
   return (
     <div className="flex">
-      <UserCard />
-      <div className="m-0 flex w-full overflow-x-auto ">
-        <TaskCard />
+      <UserCard userName={userName} skill={skill} userId={userId} />
+      <div className="m-0 flex w-full">
         <TaskCard />
         <TaskCard />
         <TaskCard />
@@ -297,12 +370,80 @@ const TeamTaskCard = () => {
   );
 };
 
-const UserCard = () => {
+const UserCard = ({
+  userName,
+  userId,
+  skill,
+}: {
+  userName: string;
+  userId: number;
+  skill: string;
+}) => {
+  const { toast } = useToast();
+  const ctx = api.useUtils();
+  const { mutate: deleteUser } = api.team.deleteUser.useMutation({
+    onSuccess: () => {
+      toast({
+        title: "User Deleted",
+        description: "User has been deleted successfully!",
+      });
+      void ctx.team.getAll.invalidate();
+    },
+
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Error deleting user",
+      });
+    },
+  });
+
   return (
-    <div className=" m-2 flex flex-col items-center justify-center rounded-xl bg-slate-300 p-5">
-      <Image src={logo} height={100} width={100} alt="" />
-      <h2>John Doe</h2>
-    </div>
+    <Popover>
+      <PopoverTrigger>
+        <div className=" relative m-2 flex flex-col items-center justify-center gap-3 rounded-xl bg-slate-300 p-7 pb-1 pl-3">
+          <div className="flex items-center justify-center">
+            <Image src={logo} height={100} width={100} alt="" />
+            <div className="flex flex-col items-start space-y-2">
+              <h2 className="text-left font-bold capitalize">{userName}</h2>
+              <Badge>{skill}</Badge>
+            </div>
+          </div>
+          <p className="text-xs">Click For Options</p>
+        </div>
+      </PopoverTrigger>
+      <PopoverContent className="flex">
+        <AlertDialog>
+          <AlertDialogTrigger className="w-full">
+            <Button className="w-full bg-red-600 hover:bg-red-800">
+              Remove User
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete this
+                user.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Go Back</AlertDialogCancel>
+              <AlertDialogAction
+                className=" bg-red-600 hover:bg-red-800"
+                onClick={() => {
+                  deleteUser({
+                    id: userId,
+                  });
+                }}
+              >
+                I Understand
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </PopoverContent>
+    </Popover>
   );
 };
 

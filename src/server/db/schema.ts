@@ -24,7 +24,7 @@ export const teamMembers = mysqlTable(
   {
     id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
     name: varchar("name", { length: 256 }).notNull(),
-    currentlyWorkingOn: varchar("currently_working_on", {
+    skill: varchar("currently_working_on", {
       length: 256,
     }).notNull(),
   },
