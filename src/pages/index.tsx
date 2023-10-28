@@ -132,7 +132,7 @@ const teamFormSchema = z.object({
 });
 
 const AddTeam = () => {
-  const [isClient, setIsClient] = useState(false);
+  const [_, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);

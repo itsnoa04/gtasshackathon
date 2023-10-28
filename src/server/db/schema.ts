@@ -8,7 +8,6 @@ import {
   mysqlTableCreator,
   varchar,
   text,
-  boolean,
 } from "drizzle-orm/mysql-core";
 
 /**
@@ -34,7 +33,7 @@ export const teamMembers = mysqlTable(
   }),
 );
 
-export const teamMemberRelations = relations(teamMembers, ({ many, one }) => ({
+export const teamMemberRelations = relations(teamMembers, ({ many }) => ({
   tasks: many(tasks),
 }));
 

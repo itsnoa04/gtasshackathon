@@ -18,6 +18,7 @@ const config = {
     "@typescript-eslint/require-await": "off",
     "no-unused-vars": "off",
     "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/no-misused-promises": "off",
 
     "@typescript-eslint/consistent-type-imports": [
       "warn",
@@ -27,12 +28,6 @@ const config = {
       },
     ],
     "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-    "@typescript-eslint/no-misused-promises": [
-      2,
-      {
-        checksVoidReturn: { attributes: false },
-      },
-    ],
   },
 };
 

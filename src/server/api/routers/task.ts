@@ -39,7 +39,7 @@ export const taskRouter = createTRPCRouter({
           skill_required: input.skillRequired,
           asignedToId: user.id,
         })
-        .catch((err) => {
+        .catch(() => {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
           });
@@ -78,7 +78,7 @@ export const taskRouter = createTRPCRouter({
       ctx.db
         .delete(tasks)
         .where(eq(tasks.id, input.id))
-        .catch((err) => {
+        .catch(() => {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
           });

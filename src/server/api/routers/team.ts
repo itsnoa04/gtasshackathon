@@ -20,7 +20,7 @@ export const teamRouter = createTRPCRouter({
           name: input.name,
           skill: input.skill,
         })
-        .catch((err) => {
+        .catch(() => {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
           });
@@ -66,7 +66,7 @@ export const teamRouter = createTRPCRouter({
       await ctx.db
         .delete(teamMembers)
         .where(eq(teamMembers.id, input.id))
-        .catch((err) => {
+        .catch(() => {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
           });
